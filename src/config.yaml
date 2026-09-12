@@ -1,0 +1,41 @@
+# Pipeline configuration for the student final-test score regression.
+# Edit here rather than in the module code.
+
+data:
+  filepath: data/regression_bonus_practice_data.csv
+  data_folder: data
+  target: final_test
+
+columns:
+  # Unique per row / administrative -- no predictive signal.
+  drop_identifiers: [index, student_id]
+  # Superseded by engineered features (sleep_duration, class_size, gender_ratio).
+  drop_after_engineering: [sleep_time, wake_time, n_male, n_female]
+  categorical: [direct_admission, CCA, learning_style, gender, tuition, mode_of_transport, bag_color]
+  yes_no: [direct_admission, tuition]
+  non_negative: [age, number_of_siblings, hours_per_week, attendance_rate, n_male, n_female]
+
+cleaning:
+  dedupe_key: [student_id]        # 900 exact re-entries of the same student
+  cca_fill_value: NONE            # missing CCA = no activity recorded
+  impute_median: [attendance_rate]
+  valid_ages: [15, 16]
+  skew_threshold: 0.5
+
+selection:
+  vif_threshold: 6.0
+  run_vif: true
+
+split:
+  val_size: 0.1
+  test_size: 0.2
+  random_state: 42
+  stratify_bins: 10
+
+training:
+  cv_folds: 5
+  save_model: true
+  model_path: outputs/best_model.pkl
+
+output:
+  folder: outputs
